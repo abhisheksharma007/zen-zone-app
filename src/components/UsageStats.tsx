@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Star, Trophy, ArrowUp, Clock } from "lucide-react";
+import { Star, Trophy, ArrowUp, Clock, Smile } from "lucide-react";
 import { getAchievements } from "@/utils/achievementUtils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
