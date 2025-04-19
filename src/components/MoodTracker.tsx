@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Smile, Star } from "lucide-react";
-import { calculatePoints } from "@/utils/achievementUtils";
+import { Smile, Star, Trophy } from "lucide-react";
+import { calculatePoints, unlockAchievement } from "@/utils/achievementUtils";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/components/ui/sonner";
+import { useNavigate } from "react-router-dom";
 
 type Mood = "great" | "good" | "neutral" | "bad" | "terrible";
 
@@ -14,6 +16,8 @@ const MoodTracker = () => {
   const [showingPostScroll, setShowingPostScroll] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(1);
   const [totalPoints, setTotalPoints] = useState(0);
+  const [showCongrats, setShowCongrats] = useState(false);
+  const navigate = useNavigate();
 
   const moods: { value: Mood; emoji: string; label: string }[] = [
     { value: "great", emoji: "😊", label: "Great" },
@@ -33,6 +37,33 @@ const MoodTracker = () => {
       const earnedPoints = calculatePoints(beforeMood!, mood, true);
       setTotalPoints(prev => prev + earnedPoints);
       setCurrentStreak(prev => prev + 1);
+      
+      if (earnedPoints > 30) {
+        setShowCongrats(true);
+        
+        // Check for mood improvement achievement
+        if (
+          (beforeMood === "terrible" && ["neutral", "good", "great"].includes(mood)) ||
+          (beforeMood === "bad" && ["good", "great"].includes(mood))
+        ) {
+          const achievement = unlockAchievement("mood-improver");
+          if (achievement) {
+            toast.success(`Achievement Unlocked: ${achievement.name}`, {
+              description: `+${achievement.points} points`,
+            });
+          }
+        }
+      }
+      
+      // Check for streak achievements
+      if (currentStreak + 1 >= 3) {
+        const achievement = unlockAchievement("three-day-streak");
+        if (achievement) {
+          toast.success(`Achievement Unlocked: ${achievement.name}`, {
+            description: `+${achievement.points} points`,
+          });
+        }
+      }
     }
   };
 
@@ -40,6 +71,7 @@ const MoodTracker = () => {
     setBeforeMood(null);
     setAfterMood(null);
     setShowingPostScroll(false);
+    setShowCongrats(false);
   };
 
   return (
@@ -53,14 +85,29 @@ const MoodTracker = () => {
       <CardContent>
         <div className="space-y-4">
           <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
+            <div 
+              className="flex items-center gap-2 cursor-pointer hover:text-zenpurple-600 transition-colors"
+              onClick={() => navigate("/achievements")}
+            >
+              <Trophy className="h-4 w-4 text-yellow-500" />
               <span className="text-sm font-medium">{totalPoints} points</span>
             </div>
             <div className="text-sm text-muted-foreground">
               🔥 {currentStreak} day streak
             </div>
           </div>
+
+          {showCongrats && afterMood && (
+            <div className="p-3 bg-green-50 border border-green-100 rounded-lg mb-4 animate-fade-in">
+              <div className="font-medium text-green-700 mb-1">Great job!</div>
+              <div className="text-sm text-green-600">
+                You improved your mood from {moods.find(m => m.value === beforeMood)?.emoji} to {moods.find(m => m.value === afterMood)?.emoji}
+              </div>
+              <div className="mt-2 pt-2 border-t border-green-100 text-xs text-green-600">
+                Tip: Check your achievements page to see your progress!
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             {beforeMood && !afterMood && (
