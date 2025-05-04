@@ -39,12 +39,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (subscriptionData) {
-        const subscription_tier = subscriptionData.subscription_tiers as SubscriptionTier;
-        const formattedSubscription = {
-          ...subscriptionData,
-          subscription_tier,
+        // Parse the features JSON to ensure it matches our expected format
+        const rawSubscriptionTier = subscriptionData.subscription_tiers;
+        const parsedFeatures = typeof rawSubscriptionTier.features === 'string' 
+          ? JSON.parse(rawSubscriptionTier.features) 
+          : rawSubscriptionTier.features;
+        
+        const subscription_tier: SubscriptionTier = {
+          id: rawSubscriptionTier.id,
+          name: rawSubscriptionTier.name,
+          description: rawSubscriptionTier.description,
+          price: rawSubscriptionTier.price,
+          features: parsedFeatures
         };
-        delete formattedSubscription.subscription_tiers;
+        
+        const formattedSubscription = {
+          id: subscriptionData.id,
+          tier_id: subscriptionData.tier_id,
+          active: subscriptionData.active,
+          current_period_end: subscriptionData.current_period_end,
+          subscription_tier
+        };
         
         setSubscription(formattedSubscription);
         setIsSubscribed(formattedSubscription.active);
@@ -57,6 +72,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .single();
           
         if (freeTier) {
+          // Parse the features JSON for the free tier as well
+          const parsedFeatures = typeof freeTier.features === 'string' 
+            ? JSON.parse(freeTier.features) 
+            : freeTier.features;
+          
+          const formattedFreeTier: SubscriptionTier = {
+            id: freeTier.id,
+            name: freeTier.name,
+            description: freeTier.description,
+            price: freeTier.price,
+            features: parsedFeatures
+          };
+          
           // Create a free subscription for the user
           const { data: newSubscription, error: createError } = await supabase
             .from('subscriptions')
@@ -78,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else if (newSubscription) {
             setSubscription({
               ...newSubscription,
-              subscription_tier: freeTier,
+              subscription_tier: formattedFreeTier,
             });
             setIsSubscribed(true);
           }

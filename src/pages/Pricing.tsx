@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ const Pricing = () => {
   const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  useState(() => {
+  useEffect(() => {
     fetchTiers();
   }, []);
 
@@ -36,7 +35,20 @@ const Pricing = () => {
       return;
     }
 
-    setTiers(data);
+    // Convert the raw data to SubscriptionTier format
+    if (data) {
+      const formattedTiers: SubscriptionTier[] = data.map(tier => ({
+        id: tier.id,
+        name: tier.name,
+        description: tier.description,
+        price: tier.price,
+        features: typeof tier.features === 'string' 
+          ? JSON.parse(tier.features) 
+          : tier.features
+      }));
+      
+      setTiers(formattedTiers);
+    }
   };
 
   const handleSubscribe = async (tierId: string) => {
