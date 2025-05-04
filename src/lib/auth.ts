@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -18,6 +18,26 @@ interface Subscription {
   current_period_end: string;
   subscription_tier: SubscriptionTier;
 }
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  isSubscribed: boolean;
+  subscription: Subscription | null;
+  signOut: () => Promise<void>;
+}
+
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  loading: true,
+  isSubscribed: false,
+  subscription: null,
+  signOut: async () => {},
+});
+
+export type { Subscription, SubscriptionTier, AuthContextType };
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(true);
