@@ -10,6 +10,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Achievements from "./pages/Achievements";
+import Pricing from "./pages/Pricing";
+import Account from "./pages/Account";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +23,23 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   
   if (!user) {
     return <Navigate to="/auth" />;
+  }
+  
+  return children;
+}
+
+function PremiumRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading, isSubscribed, subscription } = useAuth();
+  
+  if (loading) return null;
+  
+  if (!user) {
+    return <Navigate to="/auth" />;
+  }
+  
+  // Check if user has a paid subscription
+  if (!isSubscribed || (subscription && subscription.subscription_tier?.price === 0)) {
+    return <Navigate to="/pricing" />;
   }
   
   return children;
@@ -40,8 +60,19 @@ const App = () => (
               </PrivateRoute>
             } />
             <Route path="/achievements" element={
-              <PrivateRoute>
+              <PremiumRoute>
                 <Achievements />
+              </PremiumRoute>
+            } />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/account" element={
+              <PrivateRoute>
+                <Account />
+              </PrivateRoute>
+            } />
+            <Route path="/subscription-success" element={
+              <PrivateRoute>
+                <SubscriptionSuccess />
               </PrivateRoute>
             } />
             <Route path="*" element={<NotFound />} />
