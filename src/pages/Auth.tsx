@@ -25,30 +25,19 @@ export default function Auth() {
           password,
         });
         if (error) throw error;
-        toast({
-          title: "Success!",
-          description: "Please check your email to confirm your account.",
-        });
+        toast.success("Please check your email to confirm your account.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        toast({
-          title: "Success!",
-          description: "You've been logged in successfully!",
-          variant: "default"
-        });
+        toast.success("You've been logged in successfully!");
         navigate('/');
       }
     } catch (error: any) {
       console.error("Auth error:", error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
