@@ -6,120 +6,112 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  points: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  completed_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Profile {
+  id: string;
+  username: string;
+  avatar_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionTier {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  features: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Database {
   public: {
     Tables: {
+      achievements: {
+        Row: Achievement;
+        Insert: Omit<Achievement, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Achievement, 'id'>>;
+      };
+      user_achievements: {
+        Row: UserAchievement;
+        Insert: Omit<UserAchievement, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<UserAchievement, 'id'>>;
+      };
       profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          id: string
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          id?: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
+        Row: Profile;
+        Insert: Omit<Profile, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Profile, 'id'>>;
+      };
       subscription_tiers: {
-        Row: {
-          created_at: string
-          description: string | null
-          features: Json | null
-          id: string
-          name: string
-          price: number
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          features?: Json | null
-          id?: string
-          name: string
-          price: number
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          features?: Json | null
-          id?: string
-          name?: string
-          price?: number
-        }
-        Relationships: []
-      }
+        Row: SubscriptionTier;
+        Insert: Omit<SubscriptionTier, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<SubscriptionTier, 'id'>>;
+      };
       subscriptions: {
         Row: {
-          active: boolean
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          id: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          tier_id: string
-          updated_at: string
-          user_id: string
-        }
+          id: string;
+          user_id: string;
+          tier_id: string;
+          active: boolean;
+          current_period_start: string;
+          current_period_end: string;
+          stripe_customer_id: string;
+          stripe_subscription_id: string;
+          created_at: string;
+          updated_at: string;
+        };
         Insert: {
-          active?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier_id: string
-          updated_at?: string
-          user_id: string
-        }
+          id?: string;
+          user_id: string;
+          tier_id: string;
+          active?: boolean;
+          current_period_start?: string;
+          current_period_end?: string;
+          stripe_customer_id?: string;
+          stripe_subscription_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: {
-          active?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_tier_id_fkey"
-            columns: ["tier_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_tiers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
+          active?: boolean;
+          current_period_start?: string;
+          current_period_end?: string;
+          stripe_customer_id?: string;
+          stripe_subscription_id?: string;
+          updated_at?: string;
+        };
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
   }
 }
 

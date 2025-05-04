@@ -1,8 +1,6 @@
-
 # A string used to distinguish different Supabase projects on the same host. Defaults to the working
 # directory name when running `supabase init`.
 project_id = "oztvpujekeqrqislsgqe"
-org_id = "1"
 
 [api]
 # Port to use for the API URL.
@@ -59,6 +57,15 @@ enable_signup = true
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
+
+# SMTP Configuration for Mailtrap
+[auth.smtp]
+host = "smtp.mailtrap.io"
+port = 2525
+user = "929cf10d34c0c2"
+pass = "279a6a8284c59f"
+sender_name = "Zen Zone"
+sender_email = "noreply@zenzone.com"
 
 # Use an external OAuth provider. The full list of providers are: "apple", "azure", "bitbucket",
 # "discord", "facebook", "github", "gitlab", "google", "keycloak", "linkedin", "notion", "twitch",

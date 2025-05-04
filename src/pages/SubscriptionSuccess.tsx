@@ -1,59 +1,90 @@
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { LoadingCard } from '@/components/Loading';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { SubscriptionTier } from '@/integrations/supabase/types';
 
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
-import AppHeader from "@/components/AppHeader";
-
-const SubscriptionSuccess = () => {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+export default function SubscriptionSuccess() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(5);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    // Auto-redirect after countdown
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      navigate("/");
-    }
-  }, [countdown, navigate]);
+  const { data: subscription, isLoading: isLoadingSubscription } = useQuery({
+    queryKey: ['subscription', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*, subscription_tier(*)')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      return {
+        ...data,
+        subscription_tier: data.subscription_tier as SubscriptionTier,
+      };
+    },
+    enabled: !!user,
+  });
+
+  if (isLoadingSubscription) {
+    return (
+      <div className="container mx-auto py-8">
+        <LoadingCard />
+      </div>
+    );
+  }
+
+  if (!subscription) {
+    toast({
+      variant: 'destructive',
+      title: 'Error',
+      description: 'No subscription found',
+    });
+    navigate('/pricing');
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-zenblue-50 p-4 md:p-6">
-      <div className="max-w-md mx-auto">
-        <AppHeader />
-
-        <Card className="mt-8 border-green-200 shadow-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-green-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-              <Check className="h-8 w-8 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl font-bold">
-              Subscription Successful!
-            </CardTitle>
+    <ErrorBoundary>
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Successful!</CardTitle>
             <CardDescription>
-              Thank you for subscribing to Zen Zone.
+              Thank you for subscribing to {subscription.subscription_tier.name}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 text-center">
-            <p className="text-muted-foreground">
-              Your account has been updated with your new subscription benefits.
-            </p>
-            <div className="space-y-2">
-              <p>Redirecting to the app in {countdown} seconds...</p>
-              <Button onClick={() => navigate("/")} className="w-full">
-                Go to Dashboard Now
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium">Subscription Details</h3>
+                <p className="text-muted-foreground">
+                  You are now subscribed to the {subscription.subscription_tier.name} plan.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-medium">Next Steps</h3>
+                <p className="text-muted-foreground">
+                  You can now access all premium features. Your subscription will automatically renew on{' '}
+                  {new Date(subscription.current_period_end).toLocaleDateString()}.
+                </p>
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => navigate('/achievements')}
+              >
+                Start Using Premium Features
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ErrorBoundary>
   );
-};
-
-export default SubscriptionSuccess;
+}

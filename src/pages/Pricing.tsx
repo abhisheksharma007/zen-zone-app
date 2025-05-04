@@ -1,163 +1,121 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { Check } from "lucide-react";
-import AppHeader from "@/components/AppHeader";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { SubscriptionTier } from "@/lib/auth";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import { LoadingCard, LoadingSpinner } from '@/components/Loading';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { SubscriptionTier } from '@/integrations/supabase/types';
 
-const Pricing = () => {
-  const { toast } = useToast();
+export default function Pricing() {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { user, subscription, isSubscribed } = useAuth();
-  const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
-  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchTiers();
-  }, []);
+  const { data: tiers, isLoading: isLoadingTiers } = useQuery({
+    queryKey: ['subscription-tiers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subscription_tiers')
+        .select('*')
+        .order('price', { ascending: true });
 
-  const fetchTiers = async () => {
-    const { data, error } = await supabase
-      .from("subscription_tiers")
-      .select("*")
-      .order("price");
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Could not load subscription tiers",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Convert the raw data to SubscriptionTier format
-    if (data) {
-      const formattedTiers: SubscriptionTier[] = data.map(tier => ({
-        id: tier.id,
-        name: tier.name,
-        description: tier.description,
-        price: tier.price,
-        features: typeof tier.features === 'string' 
-          ? JSON.parse(tier.features) 
-          : tier.features
-      }));
-      
-      setTiers(formattedTiers);
-    }
-  };
+      if (error) throw error;
+      return data as SubscriptionTier[];
+    },
+  });
 
   const handleSubscribe = async (tierId: string) => {
     if (!user) {
-      navigate("/auth");
+      navigate('/auth');
       return;
     }
 
-    setLoading((prev) => ({ ...prev, [tierId]: true }));
-
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { tierId },
-      });
+      // In a real app, this would redirect to Stripe Checkout
+      const { error } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: user.id,
+          tier_id: tierId,
+          active: true,
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+        });
 
-      if (error || !data?.url) {
-        throw new Error(error?.message || "Could not create checkout session");
-      }
+      if (error) throw error;
 
-      window.location.href = data.url;
-    } catch (err: any) {
+      navigate('/subscription-success');
+    } catch (error) {
+      console.error('Error subscribing:', error);
       toast({
-        title: "Error",
-        description: err.message || "Something went wrong",
-        variant: "destructive",
+        variant: 'destructive',
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to subscribe',
       });
     } finally {
-      setLoading((prev) => ({ ...prev, [tierId]: false }));
+      setIsLoading(false);
     }
   };
 
-  const formatPrice = (price: number) => {
-    if (price === 0) return "Free";
-    return `$${(price / 100).toFixed(2)}/mo`;
-  };
+  if (isLoadingTiers) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <LoadingCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-zenblue-50 p-4 md:p-6">
-      <div className="max-w-5xl mx-auto">
-        <AppHeader />
-
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
-          <p className="text-muted-foreground">
-            Select the best plan for your mindful journey
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {tiers.map((tier) => {
-            const isCurrentTier = subscription?.tier_id === tier.id;
-            const features = tier.features?.feature_list || [];
-
-            return (
-              <Card
-                key={tier.id}
-                className={`flex flex-col ${
-                  isCurrentTier ? "border-zenpurple-500 border-2" : ""
-                }`}
-              >
-                <CardHeader>
-                  {isCurrentTier && (
-                    <div className="bg-zenpurple-100 text-zenpurple-700 text-xs font-medium px-2 py-1 rounded-full w-fit mb-2">
-                      Current Plan
-                    </div>
-                  )}
-                  <CardTitle className="flex items-baseline gap-2">
-                    {tier.name}
-                    <span className="text-2xl font-bold">
-                      {formatPrice(tier.price)}
-                    </span>
-                  </CardTitle>
-                  <CardDescription>{tier.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
+    <ErrorBoundary>
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-8 text-center">Choose Your Plan</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {tiers?.map((tier) => (
+            <Card key={tier.id}>
+              <CardHeader>
+                <CardTitle>{tier.name}</CardTitle>
+                <CardDescription>{tier.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-3xl font-bold">
+                    ${tier.price}/month
+                  </div>
                   <ul className="space-y-2">
-                    {features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">{feature}</span>
+                    {tier.features.map((feature, index) => (
+                      <li key={index} className="flex items-center">
+                        <span className="text-green-500 mr-2">✓</span>
+                        {feature}
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-                <CardFooter>
                   <Button
                     className="w-full"
-                    disabled={
-                      loading[tier.id] || 
-                      (isCurrentTier && isSubscribed) || 
-                      (!user && tier.name === "Free")
-                    }
+                    disabled={isLoading}
                     onClick={() => handleSubscribe(tier.id)}
-                    variant={isCurrentTier ? "outline" : "default"}
                   >
-                    {loading[tier.id]
-                      ? "Loading..."
-                      : isCurrentTier
-                      ? "Current Plan"
-                      : `Subscribe to ${tier.name}`}
+                    {isLoading ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      'Subscribe'
+                    )}
                   </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
-};
-
-export default Pricing;
+}
