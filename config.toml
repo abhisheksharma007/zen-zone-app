@@ -1,0 +1,95 @@
+# Application Configuration
+[app]
+name = "Zen Zone"
+version = "1.0.0"
+environment = "production"
+debug = false
+
+# Server Configuration
+[server]
+host = "::"
+port = 8080
+base_url = "https://zen-zone.com"
+api_url = "https://api.zen-zone.com"
+
+# Database Configuration
+[database]
+host = "localhost"
+port = 5432
+name = "zen_zone"
+user = "postgres"
+max_connections = 20
+idle_timeout = 300
+
+# Email Configuration
+[email]
+provider = "zoho"
+from = "${VITE_EMAIL_FROM}"
+smtp_host = "${VITE_ZOHO_MAIL_HOST}"
+smtp_port = "${VITE_ZOHO_MAIL_PORT}"
+smtp_user = "${VITE_ZOHO_MAIL_USER}"
+smtp_pass = "${VITE_ZOHO_MAIL_PASS}"
+use_tls = true
+
+# Security Configuration
+[security]
+session_duration = 86400  # 24 hours in seconds
+refresh_token_duration = 604800  # 7 days in seconds
+jwt_secret = "your-jwt-secret-key"
+enable_csp = true
+enable_hsts = true
+allowed_origins = [
+    "https://zen-zone.com",
+    "https://www.zen-zone.com"
+]
+
+# Cache Configuration
+[cache]
+enabled = true
+ttl = 3600  # 1 hour in seconds
+max_size = "1GB"
+type = "redis"
+
+# Logging Configuration
+[logging]
+level = "error"
+format = "json"
+enable_error_tracking = true
+enable_analytics = true
+
+# Feature Flags
+[features]
+enable_premium = true
+enable_social = true
+enable_notifications = true
+enable_meditation_timer = true
+enable_progress_tracking = true
+
+# Rate Limiting
+[rate_limit]
+enabled = true
+requests_per_minute = 100
+burst = 50
+
+# Monitoring
+[monitoring]
+enable_health_checks = true
+enable_performance_monitoring = true
+enable_error_reporting = true
+sentry_dsn = "your-sentry-dsn"
+
+# Development Tools
+[dev]
+enable_devtools = false
+enable_debug_mode = false
+enable_hot_reload = false
+enable_source_maps = false
+
+# Production Optimizations
+[production]
+minify = true
+compress = true
+enable_gzip = true
+enable_brotli = true
+enable_cdn = true
+cdn_url = "https://cdn.zen-zone.com" 

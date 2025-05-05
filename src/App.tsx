@@ -14,6 +14,7 @@ import Account from "./pages/Account";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import { LoadingPage } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import Landing from '@/pages/Landing';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,10 +46,6 @@ function PremiumRoute({ children }: { children: React.ReactNode }) {
     return <LoadingPage />;
   }
   
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
   // Check if user has a paid subscription
   if (!isSubscribed || (subscription && subscription.subscription_tier?.price === 0)) {
     return <Navigate to="/pricing" replace />;
@@ -66,8 +63,12 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={
+              
+              {/* Protected Routes */}
+              <Route path="/dashboard" element={
                 <PrivateRoute>
                   <Index />
                 </PrivateRoute>
@@ -77,7 +78,11 @@ const App = () => (
                   <Achievements />
                 </PrivateRoute>
               } />
-              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/pricing" element={
+                <PrivateRoute>
+                  <Pricing />
+                </PrivateRoute>
+              } />
               <Route path="/account" element={
                 <PrivateRoute>
                   <Account />

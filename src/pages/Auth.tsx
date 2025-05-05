@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +24,7 @@ type AuthFormData = z.infer<typeof authSchema>;
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,12 +37,45 @@ export default function Auth() {
     resolver: zodResolver(authSchema),
   });
 
+  // Check for password reset token
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const type = searchParams.get('type');
+    
+    if (token && type === 'recovery') {
+      handlePasswordReset(token);
+    }
+  }, [searchParams]);
+
+  const handlePasswordReset = async (token: string) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'recovery',
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Password reset verified',
+        description: 'Please set your new password',
+      });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Invalid or expired reset link',
+      });
+    }
+  };
+
   const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);
     try {
       if (isForgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-          redirectTo: `${window.location.origin}/auth?reset=true`,
+          redirectTo: `${window.location.origin}/auth?type=recovery`,
         });
 
         if (error) throw error;
@@ -58,7 +92,17 @@ export default function Auth() {
           password: data.password,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            toast({
+              variant: 'destructive',
+              title: 'Email not confirmed',
+              description: 'Please check your email for the confirmation link',
+            });
+            return;
+          }
+          throw error;
+        }
 
         navigate('/achievements');
       }
