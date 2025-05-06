@@ -76,7 +76,7 @@ export default function Auth() {
     try {
       if (isForgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-          redirectTo: `${window.location.origin}/auth?type=recovery`,
+          redirectTo: `https://zen-zone.com/auth?type=recovery`,
         });
 
         if (error) throw error;
@@ -92,7 +92,7 @@ export default function Auth() {
           email: data.email,
           password: data.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
+            emailRedirectTo: `https://zen-zone.com/dashboard`,
           },
         });
 

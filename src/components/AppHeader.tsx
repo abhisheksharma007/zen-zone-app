@@ -1,55 +1,85 @@
-import { Clock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { LogOut, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 const AppHeader = () => {
-  const { user, isSubscribed, subscription } = useAuth();
-  
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const location = useLocation();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <header className="w-full py-4 px-6 flex justify-between items-center bg-background border-b">
-      <div className="flex items-center gap-2">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-zenblue-500 to-zenpurple-500">
-            <Clock className="h-6 w-6 text-white" />
+    <header className="border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
+              <img src="/logo.svg" alt="Zen Zone" className="h-8 w-8" />
+              <span className="text-xl font-semibold">Zen Zone</span>
+            </Link>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-zenblue-500 to-zenpurple-500 text-transparent bg-clip-text">
-              Zen Zone
-            </h1>
-            <p className="text-xs text-muted-foreground">Find your inner peace</p>
+
+          <div className="flex items-center gap-4">
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="ghost" className="hidden sm:inline-flex">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Link to="/account">
+                  <Button variant="ghost" size="icon" className="sm:hidden">
+                    <User className="h-5 w-5" />
+                  </Button>
+                  <Button variant="ghost" className="hidden sm:inline-flex">
+                    Account
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  className="sm:hidden"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={handleSignOut}
+                  className="hidden sm:inline-flex"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/pricing">
+                  <Button variant="ghost">Pricing</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button>Sign In</Button>
+                </Link>
+              </>
+            )}
           </div>
-        </Link>
-      </div>
-      
-      <nav className="hidden md:flex items-center gap-6">
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Home
-        </Link>
-        <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Pricing
-        </Link>
-        {isSubscribed && subscription?.subscription_tier?.price > 0 && (
-          <Link to="/achievements" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Achievements
-          </Link>
-        )}
-      </nav>
-      
-      <div className="flex items-center gap-2">
-        {user ? (
-          <Link to="/account">
-            <Button variant="outline" size="sm">
-              Account
-            </Button>
-          </Link>
-        ) : (
-          <Link to="/auth">
-            <Button size="sm">
-              Sign In
-            </Button>
-          </Link>
-        )}
+        </div>
       </div>
     </header>
   );

@@ -1,5 +1,3 @@
-
-import AppHeader from "@/components/AppHeader";
 import ScrollTimer from "@/components/ScrollTimer";
 import MindfulBreak from "@/components/MindfulBreak";
 import UsageStats from "@/components/UsageStats";
@@ -10,48 +8,41 @@ import { AlarmClock, Clock, Timer } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-zenblue-50 p-4 md:p-6">
-      <div className="max-w-md mx-auto">
-        <AppHeader />
-        
-        <div className="mb-6">
-          <h2 className="text-xl font-medium mb-2 text-center">Break the doomscrolling cycle</h2>
-          <p className="text-muted-foreground text-center">
-            Set timers, track platforms, and improve your digital wellbeing
-          </p>
-        </div>
-
-        <Tabs defaultValue="timer" className="w-full mb-6">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="timer" className="flex items-center gap-1">
-              <AlarmClock className="h-4 w-4" /> Timers
+    <div className="container mx-auto py-6 sm:py-8 md:py-12 px-4">
+      <div className="max-w-md sm:max-w-xl md:max-w-2xl mx-auto">
+        <Tabs defaultValue="timer" className="w-full mb-6 sm:mb-8">
+          <TabsList className="grid grid-cols-3 mb-4 sm:mb-6 p-1">
+            <TabsTrigger value="timer" className="flex items-center gap-1 sm:gap-2 py-1.5 sm:py-2 text-sm sm:text-base">
+              <AlarmClock className="h-4 w-4 sm:h-5 sm:w-5" /> 
+              <span className="hidden sm:inline">Timers</span>
+              <span className="sm:hidden">Timer</span>
             </TabsTrigger>
-            <TabsTrigger value="break" className="flex items-center gap-1">
-              <Clock className="h-4 w-4" /> Break
+            <TabsTrigger value="break" className="flex items-center gap-1 sm:gap-2 py-1.5 sm:py-2 text-sm sm:text-base">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" /> 
+              <span className="hidden sm:inline">Break</span>
+              <span className="sm:hidden">Break</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex items-center gap-1">
-              <Timer className="h-4 w-4" /> Stats
+            <TabsTrigger value="stats" className="flex items-center gap-1 sm:gap-2 py-1.5 sm:py-2 text-sm sm:text-base">
+              <Timer className="h-4 w-4 sm:h-5 sm:w-5" /> 
+              <span className="hidden sm:inline">Stats</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="timer" className="mt-0 space-y-4">
+          <TabsContent value="timer" className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
             <MoodTracker />
             <PlatformTimers />
             <ScrollTimer />
           </TabsContent>
           
-          <TabsContent value="break" className="mt-0">
+          <TabsContent value="break" className="mt-4 sm:mt-6">
             <MindfulBreak />
           </TabsContent>
           
-          <TabsContent value="stats" className="mt-0">
+          <TabsContent value="stats" className="mt-4 sm:mt-6">
             <UsageStats />
           </TabsContent>
         </Tabs>
-
-        <footer className="text-center text-sm text-muted-foreground">
-          <p>Zen Zone - Take back control of your scrolling</p>
-        </footer>
       </div>
     </div>
   );

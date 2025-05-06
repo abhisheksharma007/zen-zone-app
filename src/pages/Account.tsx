@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { LogOut, CreditCard, User as UserIcon } from "lucide-react";
-import AppHeader from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery } from '@tanstack/react-query';
@@ -81,10 +80,8 @@ const Account = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-b from-white to-zenblue-50 p-4 md:p-6">
+      <div className="container mx-auto py-8 px-4">
         <div className="max-w-3xl mx-auto">
-          <AppHeader />
-
           <div className="mb-6">
             <h1 className="text-2xl font-bold mb-2">Account Settings</h1>
           </div>
