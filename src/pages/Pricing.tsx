@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingCard, LoadingSpinner } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { SubscriptionTier } from '@/integrations/supabase/types';
+
+// Define SubscriptionTier type
+interface SubscriptionTier {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  features: string[] | null;
+  created_at: string;
+}
 
 export default function Pricing() {
   const { user } = useAuth();
@@ -92,7 +102,7 @@ export default function Pricing() {
                     ${tier.price}/month
                   </div>
                   <ul className="space-y-2">
-                    {tier.features.map((feature, index) => (
+                    {Array.isArray(tier.features) && tier.features.map((feature, index) => (
                       <li key={index} className="flex items-center">
                         <span className="text-green-500 mr-2">✓</span>
                         {feature}

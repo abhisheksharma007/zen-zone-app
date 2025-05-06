@@ -1,9 +1,11 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavigateFunction } from 'react-router-dom';
 
 interface Props {
   children: ReactNode;
+  fallback?: React.ComponentType<{ error: Error | null }>;
 }
 
 interface State {
@@ -27,15 +29,23 @@ class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      return <ErrorFallback error={this.state.error} />;
+      const CustomFallback = this.props.fallback;
+      
+      if (CustomFallback) {
+        return <CustomFallback error={this.state.error} />;
+      }
+      
+      return <DefaultErrorFallback error={this.state.error} />;
     }
 
     return this.props.children;
   }
 }
 
-const ErrorFallback = ({ error }: { error: Error | null }) => {
-  const navigate = useNavigate();
+// A fallback that doesn't depend on routing
+const DefaultErrorFallback = ({ error }: { error: Error | null }) => {
+  // Safely check if we're in a Router context
+  const navigate = safeUseNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -51,16 +61,28 @@ const ErrorFallback = ({ error }: { error: Error | null }) => {
           >
             Refresh Page
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/')}
-          >
-            Go Home
-          </Button>
+          {navigate && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+            >
+              Go Home
+            </Button>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default ErrorBoundary; 
+// Helper function to safely use navigate
+const safeUseNavigate = (): NavigateFunction | null => {
+  try {
+    return useNavigate();
+  } catch (e) {
+    // Return null if useNavigate throws an error
+    return null;
+  }
+};
+
+export default ErrorBoundary;
