@@ -1,76 +1,69 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingCard, LoadingSpinner } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { Achievement, UserAchievement } from '@/integrations/supabase/types';
-
-interface AchievementWithCompletion extends Achievement {
-  completed: boolean;
-  completed_at: string | null;
-}
+import { AchievementWithCompletion } from '@/types';
+import { getAchievements, unlockAchievement } from '@/utils/achievementUtils';
 
 export default function Achievements() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [achievements, setAchievements] = useState<AchievementWithCompletion[]>([]);
 
-  const { data: achievements, isLoading: isLoadingAchievements } = useQuery({
+  // Use mock achievements from the utility until we have real database tables
+  const { data, isLoading: isLoadingAchievements } = useQuery({
     queryKey: ['achievements'],
     queryFn: async () => {
-      // Get all achievements
-      const { data: achievementsData, error: achievementsError } = await supabase
-        .from('achievements')
-        .select('*')
-        .order('points', { ascending: false });
-
-      if (achievementsError) throw achievementsError;
-
-      // Get user's completed achievements
-      const { data: userAchievementsData, error: userAchievementsError } = await supabase
-        .from('user_achievements')
-        .select('*')
-        .eq('user_id', user?.id);
-
-      if (userAchievementsError) throw userAchievementsError;
-
-      // Combine the data
-      const completedAchievementIds = new Set(
-        userAchievementsData?.map((ua: UserAchievement) => ua.achievement_id) || []
-      );
-
-      return achievementsData?.map((achievement: Achievement) => ({
-        ...achievement,
-        completed: completedAchievementIds.has(achievement.id),
-        completed_at: userAchievementsData?.find(
-          (ua: UserAchievement) => ua.achievement_id === achievement.id
-        )?.completed_at || null,
+      // Use the mock achievements utility
+      const mockAchievements = getAchievements();
+      
+      // Convert to our expected format
+      return mockAchievements.map(achievement => ({
+        id: achievement.id,
+        name: achievement.name,
+        description: achievement.description,
+        points: achievement.points,
+        completed: achievement.earned,
+        completed_at: achievement.date ? achievement.date.toISOString() : null,
+        created_at: new Date().toISOString()
       })) as AchievementWithCompletion[];
     },
     enabled: !!user,
   });
 
+  useState(() => {
+    if (data) {
+      setAchievements(data);
+    }
+  }, [data]);
+
   const handleCompleteAchievement = async (achievementId: string) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('user_achievements')
-        .insert({
-          user_id: user?.id,
-          achievement_id: achievementId,
-          completed_at: new Date().toISOString(),
+      // Use the mock achievement utility
+      const unlockedAchievement = unlockAchievement(achievementId);
+      
+      if (unlockedAchievement) {
+        // Update local state
+        setAchievements(prev => 
+          prev.map(achievement => 
+            achievement.id === achievementId 
+              ? { ...achievement, completed: true, completed_at: new Date().toISOString() } 
+              : achievement
+          )
+        );
+
+        toast({
+          title: 'Achievement completed!',
+          description: 'You have earned points for completing this achievement',
         });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Achievement completed!',
-        description: 'You have earned points for completing this achievement',
-      });
+      }
     } catch (error) {
       console.error('Error completing achievement:', error);
       toast({

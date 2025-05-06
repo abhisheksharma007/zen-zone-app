@@ -1,4 +1,3 @@
-
 export interface Achievement {
   id: string;
   name: string;
@@ -85,3 +84,6 @@ export const unlockAchievement = (id: string): Achievement | null => {
   
   return null;
 };
+
+// Use the imported types from our types file
+import { AchievementWithCompletion } from '@/types';

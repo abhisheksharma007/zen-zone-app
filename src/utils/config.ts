@@ -1,6 +1,6 @@
-import { parse } from 'toml';
-import fs from 'fs';
-import path from 'path';
+
+// During development, we'll use a simpler config approach
+// as the TOML parser is designed for Node.js environments
 
 interface Config {
   app: {
@@ -78,14 +78,91 @@ interface Config {
   };
 }
 
+// Mock configuration for browser environment
+const mockConfig: Config = {
+  app: {
+    name: "Zen Zone",
+    version: "1.0.0",
+    environment: "production",
+    debug: false,
+  },
+  server: {
+    host: "::",
+    port: 8080,
+    base_url: "https://zen-zone.com",
+    api_url: "https://api.zen-zone.com",
+  },
+  email: {
+    provider: "zoho",
+    from: "support@zenzone.com",
+    smtp_host: "smtp.zoho.com",
+    smtp_port: 587,
+    smtp_user: "support@zenzone.com",
+    smtp_pass: "password",
+    use_tls: true,
+  },
+  security: {
+    session_duration: 86400,
+    refresh_token_duration: 604800,
+    jwt_secret: "your-jwt-secret-key",
+    enable_csp: true,
+    enable_hsts: true,
+    allowed_origins: ["https://zen-zone.com", "https://www.zen-zone.com"],
+  },
+  cache: {
+    enabled: true,
+    ttl: 3600,
+    max_size: "1GB",
+    type: "redis",
+  },
+  logging: {
+    level: "error",
+    format: "json",
+    enable_error_tracking: true,
+    enable_analytics: true,
+  },
+  features: {
+    enable_premium: true,
+    enable_social: true,
+    enable_notifications: true,
+    enable_meditation_timer: true,
+    enable_progress_tracking: true,
+  },
+  rate_limit: {
+    enabled: true,
+    requests_per_minute: 100,
+    burst: 50,
+  },
+  monitoring: {
+    enable_health_checks: true,
+    enable_performance_monitoring: true,
+    enable_error_reporting: true,
+    sentry_dsn: "your-sentry-dsn",
+  },
+  dev: {
+    enable_devtools: false,
+    enable_debug_mode: false,
+    enable_hot_reload: false,
+    enable_source_maps: false,
+  },
+  production: {
+    minify: true,
+    compress: true,
+    enable_gzip: true,
+    enable_brotli: true,
+    enable_cdn: true,
+    cdn_url: "https://cdn.zen-zone.com",
+  },
+};
+
 class ConfigManager {
   private static instance: ConfigManager;
   private config: Config;
   private environment: string;
 
   private constructor() {
-    this.environment = process.env.NODE_ENV || 'development';
-    this.loadConfig();
+    this.environment = import.meta.env.MODE || 'development';
+    this.config = mockConfig;
   }
 
   public static getInstance(): ConfigManager {
@@ -93,32 +170,6 @@ class ConfigManager {
       ConfigManager.instance = new ConfigManager();
     }
     return ConfigManager.instance;
-  }
-
-  private loadConfig(): void {
-    try {
-      const configPath = path.resolve(process.cwd(), 'config.toml');
-      const configFile = fs.readFileSync(configPath, 'utf-8');
-      
-      // Replace environment variables in the TOML content
-      const processedConfig = this.processEnvVars(configFile);
-      this.config = parse(processedConfig) as Config;
-    } catch (error) {
-      console.error('Error loading configuration:', error);
-      throw new Error('Failed to load configuration');
-    }
-  }
-
-  private processEnvVars(configContent: string): string {
-    // Replace ${VARIABLE_NAME} with actual environment variable values
-    return configContent.replace(/\${([^}]+)}/g, (match, variable) => {
-      const value = process.env[variable];
-      if (value === undefined) {
-        console.warn(`Warning: Environment variable ${variable} is not set`);
-        return '';
-      }
-      return value;
-    });
   }
 
   public getConfig(): Config {
@@ -169,4 +220,4 @@ class ConfigManager {
 }
 
 export const configManager = ConfigManager.getInstance();
-export type { Config }; 
+export type { Config };

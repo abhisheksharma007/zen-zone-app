@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { useQuery } from '@tanstack/react-query';
 import { LoadingCard, LoadingSpinner } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { Profile } from '@/integrations/supabase/types';
+import { Profile } from '@/types';
 
 const Account = () => {
   const { toast } = useToast();

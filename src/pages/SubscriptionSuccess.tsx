@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingCard } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { SubscriptionTier } from '@/integrations/supabase/types';
+import { SubscriptionTier } from '@/types';
 
 export default function SubscriptionSuccess() {
   const { user } = useAuth();
