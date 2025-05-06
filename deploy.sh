@@ -37,6 +37,10 @@ echo "🧹 Cleaning node_modules and reinstalling dependencies..."
 rm -rf node_modules
 npm ci
 
+# Install Terser for production builds
+echo "📦 Installing Terser for production builds..."
+npm install terser --save-dev
+
 # Build the application with environment-specific optimizations
 echo "🔨 Building the application for $ENV..."
 NODE_ENV=$ENV npm run build || {
@@ -90,6 +94,13 @@ ssh -i "$SSH_KEY_PATH" "$EC2_USER@$EC2_HOST" << 'ENDSSH'
   echo "📚 Installing production dependencies..."
   npm ci --production || {
     echo "❌ Error: Failed to install dependencies"
+    exit 1
+  }
+
+  # Install Terser for production builds
+  echo "📦 Installing Terser for production builds..."
+  npm install terser --save-dev || {
+    echo "❌ Error: Failed to install Terser"
     exit 1
   }
   

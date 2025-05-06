@@ -19,13 +19,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       // Production build optimizations
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: mode === 'production' && env.VITE_LOG_LEVEL === 'error', // Only remove console.logs in production if log level is error
-          drop_debugger: true,
-        },
-      },
+      minify: 'esbuild',
       rollupOptions: {
         output: {
           manualChunks: {

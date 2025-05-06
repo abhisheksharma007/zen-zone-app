@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, CheckCircle, Leaf, Zap, Clock, Shield } from 'lucide-react';
-import { EnvTest } from '@/components/EnvTest';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -32,9 +31,6 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Environment Test Component - Remove in production */}
-      {import.meta.env.DEV && <EnvTest />}
-      
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

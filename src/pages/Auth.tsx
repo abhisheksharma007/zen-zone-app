@@ -24,6 +24,7 @@ type AuthFormData = z.infer<typeof authSchema>;
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -86,6 +87,23 @@ export default function Auth() {
         });
         setIsForgotPassword(false);
         reset();
+      } else if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth`,
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: 'Sign up successful',
+          description: 'Please check your email to confirm your account',
+        });
+        setIsSignUp(false);
+        reset();
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: data.email,
@@ -104,7 +122,7 @@ export default function Auth() {
           throw error;
         }
 
-        navigate('/achievements');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -120,72 +138,102 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full p-6 bg-card rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isForgotPassword ? 'Reset Password' : 'Sign In'}
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              {...register('email')}
-              disabled={isLoading}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-
-          {!isForgotPassword && (
+      <Card className="max-w-md w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            {isForgotPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {isForgotPassword 
+              ? 'Enter your email to reset your password'
+              : isSignUp 
+                ? 'Create your account to get started'
+                : 'Sign in to your account to continue'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                {...register('password')}
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                {...register('email')}
                 disabled={isLoading}
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
               )}
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <LoadingSpinner size="sm" />
-            ) : isForgotPassword ? (
-              'Send Reset Link'
-            ) : (
-              'Sign In'
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  {...register('password')}
+                  disabled={isLoading}
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
+              </div>
             )}
-          </Button>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsForgotPassword(!isForgotPassword);
-                reset();
-              }}
-              className="text-sm text-muted-foreground hover:text-primary"
+            <Button
+              type="submit"
+              className="w-full"
               disabled={isLoading}
             >
-              {isForgotPassword
-                ? 'Back to Sign In'
-                : 'Forgot your password?'}
-            </button>
-          </div>
-        </form>
-      </div>
+              {isLoading ? (
+                <LoadingSpinner size="sm" />
+              ) : isForgotPassword ? (
+                'Send Reset Link'
+              ) : isSignUp ? (
+                'Create Account'
+              ) : (
+                'Sign In'
+              )}
+            </Button>
+
+            <div className="flex flex-col gap-2 text-center">
+              {!isForgotPassword && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(!isForgotPassword);
+                    reset();
+                  }}
+                  className="text-sm text-muted-foreground hover:text-primary"
+                  disabled={isLoading}
+                >
+                  {isForgotPassword
+                    ? 'Back to Sign In'
+                    : 'Forgot your password?'}
+                </button>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setIsForgotPassword(false);
+                  reset();
+                }}
+                className="text-sm text-muted-foreground hover:text-primary"
+                disabled={isLoading}
+              >
+                {isSignUp
+                  ? 'Already have an account? Sign In'
+                  : "Don't have an account? Sign Up"}
+              </button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

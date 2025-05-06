@@ -15,6 +15,7 @@ import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import { LoadingPage } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Landing from '@/pages/Landing';
+import { EnvTest } from '@/components/EnvTest';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +67,10 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/pricing" element={<Pricing />} />
+              {import.meta.env.DEV && (
+                <Route path="/env-test" element={<EnvTest />} />
+              )}
               
               {/* Protected Routes */}
               <Route path="/dashboard" element={
@@ -74,14 +79,9 @@ const App = () => (
                 </PrivateRoute>
               } />
               <Route path="/achievements" element={
-                <PrivateRoute>
+                <PremiumRoute>
                   <Achievements />
-                </PrivateRoute>
-              } />
-              <Route path="/pricing" element={
-                <PrivateRoute>
-                  <Pricing />
-                </PrivateRoute>
+                </PremiumRoute>
               } />
               <Route path="/account" element={
                 <PrivateRoute>
