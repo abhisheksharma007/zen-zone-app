@@ -1,6 +1,5 @@
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,31 +16,22 @@ export default function Achievements() {
   const [achievements, setAchievements] = useState<AchievementWithCompletion[]>([]);
 
   // Use mock achievements from the utility until we have real database tables
-  const { data, isLoading: isLoadingAchievements } = useQuery({
-    queryKey: ['achievements'],
-    queryFn: async () => {
-      // Use the mock achievements utility
-      const mockAchievements = getAchievements();
-      
-      // Convert to our expected format
-      return mockAchievements.map(achievement => ({
-        id: achievement.id,
-        name: achievement.name,
-        description: achievement.description,
-        points: achievement.points,
-        completed: achievement.earned,
-        completed_at: achievement.date ? achievement.date.toISOString() : null,
-        created_at: new Date().toISOString()
-      })) as AchievementWithCompletion[];
-    },
-    enabled: !!user,
-  });
-
-  useState(() => {
-    if (data) {
-      setAchievements(data);
-    }
-  }, [data]);
+  useEffect(() => {
+    // Convert mock achievements to the expected format
+    const mockAchievements = getAchievements();
+    
+    const formattedAchievements = mockAchievements.map(achievement => ({
+      id: achievement.id,
+      name: achievement.name,
+      description: achievement.description,
+      points: achievement.points,
+      completed: achievement.earned,
+      completed_at: achievement.date ? achievement.date.toISOString() : null,
+      created_at: new Date().toISOString()
+    })) as AchievementWithCompletion[];
+    
+    setAchievements(formattedAchievements);
+  }, []);
 
   const handleCompleteAchievement = async (achievementId: string) => {
     setIsLoading(true);
@@ -76,7 +66,7 @@ export default function Achievements() {
     }
   };
 
-  if (isLoadingAchievements) {
+  if (!achievements.length) {
     return (
       <div className="container mx-auto py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

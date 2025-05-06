@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,17 +18,32 @@ export default function SubscriptionSuccess() {
   const { data: subscription, isLoading: isLoadingSubscription } = useQuery({
     queryKey: ['subscription', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*, subscription_tier(*)')
-        .eq('user_id', user?.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*, tier_id')
+          .eq('user_id', user?.id)
+          .single();
 
-      if (error) throw error;
-      return {
-        ...data,
-        subscription_tier: data.subscription_tier as SubscriptionTier,
-      };
+        if (error) throw error;
+        
+        // Get subscription tier details
+        const { data: tierData, error: tierError } = await supabase
+          .from('subscription_tiers')
+          .select('*')
+          .eq('id', data.tier_id)
+          .single();
+          
+        if (tierError) throw tierError;
+        
+        return {
+          ...data,
+          subscription_tier: tierData as SubscriptionTier,
+        };
+      } catch (error) {
+        console.error('Error fetching subscription:', error);
+        throw error;
+      }
     },
     enabled: !!user,
   });
