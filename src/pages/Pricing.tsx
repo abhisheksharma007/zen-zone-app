@@ -1,45 +1,62 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { LoadingCard, LoadingSpinner } from '@/components/Loading';
+import { LoadingSpinner } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import PageLayout from '@/components/PageLayout';
-import BackButton from '@/components/BackButton';
+import { CheckCircle } from 'lucide-react';
 
-// Define SubscriptionTier type
-interface SubscriptionTier {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  features: string[] | null;
-  created_at: string;
-}
+const pricingTiers = [
+  {
+    id: 'free',
+    name: 'Free',
+    description: 'Perfect for beginners',
+    price: 0,
+    features: [
+      'Basic meditation sessions',
+      'Daily mindfulness reminders',
+      'Progress tracking',
+      'Community access',
+      'Basic meditation guides'
+    ]
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    description: 'For dedicated practitioners',
+    price: 9.99,
+    features: [
+      'All Free features',
+      'Advanced meditation programs',
+      'Personalized guidance',
+      'Exclusive content',
+      'Priority support',
+      'Offline access'
+    ]
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    description: 'For meditation professionals',
+    price: 19.99,
+    features: [
+      'All Premium features',
+      'Custom meditation programs',
+      '1-on-1 coaching sessions',
+      'Advanced analytics',
+      'API access',
+      'White-label solutions'
+    ]
+  }
+];
 
 export default function Pricing() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
-  const { data: tiers, isLoading: isLoadingTiers } = useQuery({
-    queryKey: ['subscription-tiers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscription_tiers')
-        .select('*')
-        .order('price', { ascending: true });
-
-      if (error) throw error;
-      return data as SubscriptionTier[];
-    },
-  });
 
   const handleSubscribe = async (tierId: string) => {
     if (!user) {
@@ -50,19 +67,10 @@ export default function Pricing() {
     setIsLoading(true);
     try {
       // In a real app, this would redirect to Stripe Checkout
-      const { error } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: user.id,
-          tier_id: tierId,
-          active: true,
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-        });
-
-      if (error) throw error;
-
-      navigate('/subscription-success');
+      toast({
+        title: 'Coming Soon',
+        description: 'Subscription payments will be available soon!',
+      });
     } catch (error) {
       console.error('Error subscribing:', error);
       toast({
@@ -75,49 +83,48 @@ export default function Pricing() {
     }
   };
 
-  const renderContent = () => {
-    if (isLoadingTiers) {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <LoadingCard key={i} />
-          ))}
+  return (
+    <ErrorBoundary>
+      <div className="container mx-auto py-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
+          <p className="text-xl text-muted-foreground">
+            Choose the plan that works best for your meditation journey
+          </p>
         </div>
-      );
-    }
 
-    return (
-      <>
-        <h1 className="text-3xl font-bold mb-8 text-center">Choose Your Plan</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {tiers?.map((tier) => (
-            <Card key={tier.id}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {pricingTiers.map((tier) => (
+            <Card key={tier.id} className="flex flex-col">
               <CardHeader>
-                <CardTitle>{tier.name}</CardTitle>
+                <CardTitle className="text-2xl">{tier.name}</CardTitle>
                 <CardDescription>{tier.description}</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-grow">
                 <div className="space-y-4">
                   <div className="text-3xl font-bold">
-                    ${tier.price}/month
+                    {tier.price === 0 ? 'Free' : `$${tier.price}/month`}
                   </div>
-                  <ul className="space-y-2">
-                    {Array.isArray(tier.features) && tier.features.map((feature, index) => (
-                      <li key={index} className="flex items-center">
-                        <span className="text-green-500 mr-2">✓</span>
-                        {feature}
+                  <ul className="space-y-3">
+                    {tier.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="h-5 w-5 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button
-                    className="w-full"
+                    className="w-full mt-6"
                     disabled={isLoading}
                     onClick={() => handleSubscribe(tier.id)}
+                    variant={tier.price === 0 ? 'outline' : 'default'}
                   >
                     {isLoading ? (
                       <LoadingSpinner size="sm" />
+                    ) : tier.price === 0 ? (
+                      'Get Started'
                     ) : (
-                      'Subscribe'
+                      'Subscribe Now'
                     )}
                   </Button>
                 </div>
@@ -125,18 +132,13 @@ export default function Pricing() {
             </Card>
           ))}
         </div>
-      </>
-    );
-  };
 
-  return (
-    <PageLayout>
-      <ErrorBoundary>
-        <div className="container mx-auto py-8">
-          <BackButton to="/" label="Back to Home" />
-          {renderContent()}
+        <div className="text-center mt-12">
+          <p className="text-muted-foreground">
+            All plans include a 14-day free trial. No credit card required.
+          </p>
         </div>
-      </ErrorBoundary>
-    </PageLayout>
+      </div>
+    </ErrorBoundary>
   );
 }

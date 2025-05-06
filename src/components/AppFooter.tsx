@@ -1,11 +1,10 @@
-
 import { Link } from "react-router-dom";
 
 const AppFooter = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="w-full py-6 px-6 mt-8 bg-white border-t">
+    <footer className="w-full py-6 px-6 mt-8 bg-background border-t">
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">

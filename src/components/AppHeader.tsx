@@ -1,4 +1,3 @@
-
 import { Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ const AppHeader = () => {
   const { user, isSubscribed, subscription } = useAuth();
   
   return (
-    <header className="w-full py-4 px-6 flex justify-between items-center bg-white shadow-sm rounded-lg mb-6">
+    <header className="w-full py-4 px-6 flex justify-between items-center bg-background border-b">
       <div className="flex items-center gap-2">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-zenblue-500 to-zenpurple-500">
