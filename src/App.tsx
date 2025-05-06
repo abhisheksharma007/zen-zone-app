@@ -69,7 +69,11 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/pricing" element={
+                <PageLayout>
+                  <Pricing />
+                </PageLayout>
+              } />
               {import.meta.env.DEV && (
                 <Route path="/env-test" element={<EnvTest />} />
               )}
@@ -98,7 +102,9 @@ const App = () => (
               } />
               <Route path="/subscription-success" element={
                 <PrivateRoute>
-                  <SubscriptionSuccess />
+                  <PageLayout>
+                    <SubscriptionSuccess />
+                  </PageLayout>
                 </PrivateRoute>
               } />
               <Route path="*" element={<NotFound />} />
