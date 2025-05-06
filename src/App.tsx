@@ -17,6 +17,7 @@ import { LoadingPage } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Landing from '@/pages/Landing';
 import { EnvTest } from '@/components/EnvTest';
+import PageLayout from "@/components/PageLayout";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,17 +77,23 @@ const App = () => (
               {/* Protected Routes */}
               <Route path="/dashboard" element={
                 <PrivateRoute>
-                  <Index />
+                  <PageLayout>
+                    <Index />
+                  </PageLayout>
                 </PrivateRoute>
               } />
               <Route path="/achievements" element={
                 <PremiumRoute>
-                  <Achievements />
+                  <PageLayout>
+                    <Achievements />
+                  </PageLayout>
                 </PremiumRoute>
               } />
               <Route path="/account" element={
                 <PrivateRoute>
-                  <Account />
+                  <PageLayout>
+                    <Account />
+                  </PageLayout>
                 </PrivateRoute>
               } />
               <Route path="/subscription-success" element={

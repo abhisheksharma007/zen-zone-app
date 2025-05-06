@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingCard } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PageLayout from '@/components/PageLayout';
+import BackButton from '@/components/BackButton';
 import { SubscriptionTier } from '@/types';
 
 export default function SubscriptionSuccess() {
@@ -50,9 +52,11 @@ export default function SubscriptionSuccess() {
 
   if (isLoadingSubscription) {
     return (
-      <div className="container mx-auto py-8">
-        <LoadingCard />
-      </div>
+      <PageLayout>
+        <div className="container mx-auto py-8">
+          <LoadingCard />
+        </div>
+      </PageLayout>
     );
   }
 
@@ -67,40 +71,43 @@ export default function SubscriptionSuccess() {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Subscription Successful!</CardTitle>
-            <CardDescription>
-              Thank you for subscribing to {subscription.subscription_tier.name}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium">Subscription Details</h3>
-                <p className="text-muted-foreground">
-                  You are now subscribed to the {subscription.subscription_tier.name} plan.
-                </p>
+    <PageLayout>
+      <ErrorBoundary>
+        <div className="container mx-auto py-8">
+          <BackButton to="/pricing" label="Back to Pricing" />
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription Successful!</CardTitle>
+              <CardDescription>
+                Thank you for subscribing to {subscription.subscription_tier.name}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-medium">Subscription Details</h3>
+                  <p className="text-muted-foreground">
+                    You are now subscribed to the {subscription.subscription_tier.name} plan.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium">Next Steps</h3>
+                  <p className="text-muted-foreground">
+                    You can now access all premium features. Your subscription will automatically renew on{' '}
+                    {new Date(subscription.current_period_end).toLocaleDateString()}.
+                  </p>
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={() => navigate('/achievements')}
+                >
+                  Start Using Premium Features
+                </Button>
               </div>
-              <div>
-                <h3 className="text-lg font-medium">Next Steps</h3>
-                <p className="text-muted-foreground">
-                  You can now access all premium features. Your subscription will automatically renew on{' '}
-                  {new Date(subscription.current_period_end).toLocaleDateString()}.
-                </p>
-              </div>
-              <Button
-                className="w-full"
-                onClick={() => navigate('/achievements')}
-              >
-                Start Using Premium Features
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </ErrorBoundary>
+            </CardContent>
+          </Card>
+        </div>
+      </ErrorBoundary>
+    </PageLayout>
   );
 }

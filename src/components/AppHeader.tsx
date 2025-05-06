@@ -10,12 +10,15 @@ const AppHeader = () => {
   return (
     <header className="w-full py-4 px-6 flex justify-between items-center bg-white shadow-sm rounded-lg mb-6">
       <div className="flex items-center gap-2">
-        <Link to="/">
-          <div className="flex items-center gap-2">
-            <Clock className="h-6 w-6 text-zenpurple-500" />
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-zenblue-500 to-zenpurple-500">
+            <Clock className="h-6 w-6 text-white" />
+          </div>
+          <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-zenblue-500 to-zenpurple-500 text-transparent bg-clip-text">
               Zen Zone
             </h1>
+            <p className="text-xs text-muted-foreground">Find your inner peace</p>
           </div>
         </Link>
       </div>

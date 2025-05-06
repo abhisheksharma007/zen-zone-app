@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingCard, LoadingSpinner } from '@/components/Loading';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PageLayout from '@/components/PageLayout';
+import BackButton from '@/components/BackButton';
 
 // Define SubscriptionTier type
 interface SubscriptionTier {
@@ -73,21 +75,19 @@ export default function Pricing() {
     }
   };
 
-  if (isLoadingTiers) {
-    return (
-      <div className="container mx-auto py-8">
+  const renderContent = () => {
+    if (isLoadingTiers) {
+      return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
             <LoadingCard key={i} />
           ))}
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  return (
-    <ErrorBoundary>
-      <div className="container mx-auto py-8">
+    return (
+      <>
         <h1 className="text-3xl font-bold mb-8 text-center">Choose Your Plan</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {tiers?.map((tier) => (
@@ -125,7 +125,18 @@ export default function Pricing() {
             </Card>
           ))}
         </div>
-      </div>
-    </ErrorBoundary>
+      </>
+    );
+  };
+
+  return (
+    <PageLayout>
+      <ErrorBoundary>
+        <div className="container mx-auto py-8">
+          <BackButton to="/" label="Back to Home" />
+          {renderContent()}
+        </div>
+      </ErrorBoundary>
+    </PageLayout>
   );
 }
