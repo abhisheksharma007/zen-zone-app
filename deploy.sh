@@ -39,7 +39,7 @@ ssh -i "$SSH_KEY_PATH" "$EC2_USER@$EC2_HOST" << 'ENDSSH'
 
   echo "🧹 Cleaning node_modules and reinstalling dependencies..."
   rm -rf node_modules
-  npm ci --production || {
+  npm ci || {
     echo "❌ Error: Failed to install dependencies"
     exit 1
   }
